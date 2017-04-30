@@ -27,7 +27,7 @@ fn args_fail(msg: &str) -> ! {
 
 pub fn parse_config(args: Vec<String>) -> Config {
     let mut opts = Options::new();
-    opts.optflag("l", "list", "list LTSV keys");
+    opts.optflag("l", "list", "list LTSV labels");
     opts.optflag("h", "help", "show this message");
 
     let (_, args) = args.split_first().unwrap();
