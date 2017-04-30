@@ -4,3 +4,5 @@ version = "0.1.0"
 authors = ["y_uuki <yuki.tsubo@gmail.com>"]
 
 [dependencies]
+getopts = "0.2"
+log = "0.3"
