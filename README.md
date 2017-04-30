@@ -1,5 +1,5 @@
-rllq LTSV Log Query in Rust
-===========================
+rllq: LTSV Log Query in Rust
+============================
 
 Currently this software is under development.
 
