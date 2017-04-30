@@ -7,12 +7,23 @@ use std::env;
 use std::process;
 use std::io::{self, Write};
 use getopts::Options;
-use config::Config;
 
-pub mod config;
+extern crate rllq;
+use rllq::config::*;
+use rllq::ltsv;
+use rllq::error::Error;
 
 fn main() {
     let config = parse_config(env::args().collect());
+    if config.query_list {
+        match do_list() {
+            Some(err) => {
+                println!("{:?}", err);
+                std::process::exit(2);
+            }
+            None => {}
+        }
+    }
 }
 
 fn print_usage(opts: &Options) {
@@ -48,4 +59,19 @@ pub fn parse_config(args: Vec<String>) -> Config {
     Config { query_list: opt_match.opt_present("list") }
 }
 
-pub fn do_list(config: &Config) {}
+pub fn do_list() -> Option<Error> {
+    match ltsv::open_file("-") {
+        Ok(mut f) => {
+            match ltsv::parse_head(&mut f) {
+                Ok(items) => {
+                    for (k, _) in &items {
+                        println!("{}", k)
+                    }
+                    return None;
+                }
+                Err(e) => return Some(e),
+            }
+        }
+        Err(e) => return Some(e),
+    }
+}
