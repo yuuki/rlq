@@ -47,7 +47,8 @@ fn parse_config(args: Vec<String>) -> Config {
 
     let (_, args) = args.split_first().unwrap();
     if args.len() == 0 || args[0] == "-h" || args[0] == "--help" {
-        print_usage(&opts)
+        print_usage(&opts);
+        process::exit(0);
     }
 
     let opt_match = match opts.parse(args) {
