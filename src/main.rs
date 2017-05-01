@@ -15,15 +15,19 @@ use rllq::error::Error;
 
 fn main() {
     let config = parse_config(env::args().collect());
-    if config.query_list {
-        match do_list() {
-            Some(err) => {
-                println!("{:?}", err);
-                std::process::exit(2);
+    let ret = match config {
+        Config { query_list: true } => {
+            match do_list() {
+                Some(err) => {
+                    println!("{:?}", err);
+                    2
+                }
+                None => 0,
             }
-            None => std::process::exit(0),
         }
-    }
+        _ => std::process::exit(-1),
+    };
+    std::process::exit(ret);
 }
 
 fn print_usage(opts: &Options) {
