@@ -21,7 +21,7 @@ fn main() {
                 println!("{:?}", err);
                 std::process::exit(2);
             }
-            None => {}
+            None => std::process::exit(0),
         }
     }
 }
