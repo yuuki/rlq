@@ -40,7 +40,7 @@ fn args_fail(msg: &str) -> ! {
     process::exit(1)
 }
 
-pub fn parse_config(args: Vec<String>) -> Config {
+fn parse_config(args: Vec<String>) -> Config {
     let mut opts = Options::new();
     opts.optflag("l", "list", "list LTSV labels");
     opts.optflag("h", "help", "show this message");
@@ -63,7 +63,7 @@ pub fn parse_config(args: Vec<String>) -> Config {
     Config { query_list: opt_match.opt_present("list") }
 }
 
-pub fn do_list() -> Option<Error> {
+fn do_list() -> Option<Error> {
     match ltsv::open_file("-") {
         Ok(mut f) => {
             match ltsv::parse_head(&mut f) {
