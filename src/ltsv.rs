@@ -25,7 +25,7 @@ pub fn open_file(name: &str) -> Result<LineReader, Error> {
     match name {
         "-" => Ok(LineReader::Stdin(stdin())),
         _ => {
-            let f = try!(File::open(&Path::new(name)));
+            let f = File::open(&Path::new(name))?;
             Ok(LineReader::FileIn(BufReader::new(f)))
         }
     }
