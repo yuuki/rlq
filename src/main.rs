@@ -1,6 +1,7 @@
 #![crate_name = "rllq"]
 
 extern crate getopts;
+#[macro_use]
 extern crate log;
 
 use std::env;
@@ -11,15 +12,19 @@ use getopts::Options;
 extern crate rllq;
 use rllq::config::*;
 use rllq::ltsv;
-use rllq::error::Error;
+use rllq::error::CliError;
+
+#[macro_use]
+pub mod error;
 
 fn main() {
-    let config = parse_config(env::args().collect());
+    let (args, config) = parse_config(env::args().collect());
     let ret = match config {
         Config { query_list: true } => {
-            match do_list() {
+            match do_list(args) {
+                Some(CliError::Other) => 3,
                 Some(err) => {
-                    println!("{:?}", err);
+                    stderr!("{}", err);
                     2
                 }
                 None => 0,
@@ -36,11 +41,11 @@ fn print_usage(opts: &Options) {
 }
 
 fn args_fail(msg: &str) -> ! {
-    writeln!(io::stderr(), "{}", msg).unwrap();
+    stderr!("{}", msg);
     process::exit(1)
 }
 
-fn parse_config(args: Vec<String>) -> Config {
+fn parse_config(args: Vec<String>) -> (Vec<String>, Config) {
     let mut opts = Options::new();
     opts.optflag("l", "list", "list LTSV labels");
     opts.optflag("h", "help", "show this message");
@@ -61,22 +66,34 @@ fn parse_config(args: Vec<String>) -> Config {
         process::exit(0);
     }
 
-    Config { query_list: opt_match.opt_present("list") }
+    (opt_match.free.clone(), Config { query_list: opt_match.opt_present("list") })
 }
 
-fn do_list() -> Option<Error> {
-    match ltsv::open_file("-") {
+fn do_list(args: Vec<String>) -> Option<CliError> {
+    if args.len() == 0 {
+        return Some(CliError::NotEnoughArgs);
+    }
+    if args.len() == 2 {
+        return Some(CliError::TooManyArgs);
+    }
+    match ltsv::open_file(args[0].as_ref()) {
+        Err(err) => {
+            stderr!("failed to open file: {}", err);
+            return Some(CliError::Other);
+        }
         Ok(mut f) => {
             match ltsv::parse_head(&mut f) {
+                Err(err) => {
+                    stderr!("failed to parse head: {:?}", err);
+                    return Some(CliError::Other);
+                }
                 Ok(items) => {
                     for (k, _) in &items {
                         println!("{}", k)
                     }
                     return None;
                 }
-                Err(e) => return Some(e),
             }
         }
-        Err(e) => return Some(e),
     }
 }
