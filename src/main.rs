@@ -5,7 +5,7 @@ extern crate getopts;
 extern crate log;
 
 use std::env;
-use std::process;
+use std::process::exit;
 use std::io::{self, Write};
 use getopts::Options;
 
@@ -19,20 +19,18 @@ pub mod error;
 
 fn main() {
     let (args, config) = parse_config(env::args().collect());
-    let ret = match config {
-        Config { query_list: true } => {
-            match do_list(args) {
-                Some(CliError::Other) => 3,
-                Some(err) => {
-                    stderr!("{}", err);
-                    2
-                }
-                None => 0,
+    if config.query_list {
+        let ret = match do_list(args) {
+            Some(CliError::Other) => 3,
+            Some(err) => {
+                stderr!("{}", err);
+                2
             }
-        }
-        _ => std::process::exit(-1),
-    };
-    std::process::exit(ret);
+            None => 0,
+        };
+        exit(ret);
+    }
+    exit(0);
 }
 
 fn print_usage(opts: &Options) {
@@ -42,7 +40,7 @@ fn print_usage(opts: &Options) {
 
 fn args_fail(msg: &str) -> ! {
     stderr!("{}", msg);
-    process::exit(1)
+    exit(1)
 }
 
 fn parse_config(args: Vec<String>) -> (Vec<String>, Config) {
@@ -53,7 +51,7 @@ fn parse_config(args: Vec<String>) -> (Vec<String>, Config) {
     let (_, args) = args.split_first().unwrap();
     if args.len() == 0 || args[0] == "-h" || args[0] == "--help" {
         print_usage(&opts);
-        process::exit(0);
+        exit(0);
     }
 
     let opt_match = match opts.parse(args) {
@@ -63,7 +61,7 @@ fn parse_config(args: Vec<String>) -> (Vec<String>, Config) {
 
     if opt_match.opt_present("h") || opt_match.opt_present("help") {
         print_usage(&opts);
-        process::exit(0);
+        exit(0);
     }
 
     (opt_match.free.clone(), Config { query_list: opt_match.opt_present("list") })
