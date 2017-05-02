@@ -39,6 +39,16 @@ fn main() {
             None => 0,
         };
         exit(ret);
+    } else if config.query_groupby != "" {
+        let ret = match do_groupby(args, config.query_groupby) {
+            Some(CliError::Other) => 3,
+            Some(err) => {
+                stderr!("{}", err);
+                2
+            }
+            None => 0,
+        };
+        exit(ret);
     }
     exit(0);
 }
@@ -57,6 +67,10 @@ fn parse_config(args: Vec<String>) -> (Vec<String>, Config) {
     let mut opts = Options::new();
     opts.optflag("l", "list", "list LTSV labels");
     opts.optmulti("s", "select", "select fields by specified labels", "LABEL");
+    opts.optopt("g",
+                "groupby",
+                "Group element by specified keys (the default aggregation method: 'count')",
+                "LABEL");
     opts.optflag("h", "help", "show this message");
 
     let (_, args) = args.split_first().unwrap();
@@ -79,6 +93,7 @@ fn parse_config(args: Vec<String>) -> (Vec<String>, Config) {
      Config {
          query_list: opt_match.opt_present("list"),
          query_select: opt_match.opt_strs("select"),
+         query_groupby: opt_match.opt_str("groupby").unwrap_or_default(),
      })
 }
 
@@ -159,6 +174,35 @@ fn do_select(args: Vec<String>, arg_labels: Vec<String>) -> Option<CliError> {
                     return Some(CliError::Other);
                 }
                 Ok(_) => return None,
+            }
+        }
+    }
+}
+
+fn do_groupby(args: Vec<String>, arg_label: String) -> Option<CliError> {
+    if args.len() == 0 {
+        return Some(CliError::NotEnoughArgs);
+    }
+    if args.len() == 2 {
+        return Some(CliError::TooManyArgs);
+    }
+    match ltsv::open_file(args[0].as_ref()) {
+        Err(err) => {
+            stderr!("failed to open file: {}", err);
+            return Some(CliError::Other);
+        }
+        Ok(mut f) => {
+            match ltsv::group_by(&mut f, &arg_label) {
+                Err(err) => {
+                    stderr!("failed to parse head: {:?}", err);
+                    return Some(CliError::Other);
+                }
+                Ok(group) => {
+                    for (label_value, count) in group {
+                        println!("{}:{}\tcount:{}", arg_label, label_value, count);
+                    }
+                    return None;
+                }
             }
         }
     }
