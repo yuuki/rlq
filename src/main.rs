@@ -111,7 +111,7 @@ fn do_list(args: Vec<String>) -> Option<CliError> {
     }
 }
 
-fn do_select(args: Vec<String>, labels: Vec<String>) -> Option<CliError> {
+fn do_select(args: Vec<String>, arg_labels: Vec<String>) -> Option<CliError> {
     if args.len() == 0 {
         return Some(CliError::NotEnoughArgs);
     }
@@ -124,8 +124,25 @@ fn do_select(args: Vec<String>, labels: Vec<String>) -> Option<CliError> {
             return Some(CliError::Other);
         }
         Ok(mut f) => {
+            // Validate that each label exists on the target data.
+            match ltsv::parse_head(&mut f) {
+                Err(err) => {
+                    stderr!("failed to parse head: {}", err);
+                    return Some(CliError::Other);
+                }
+                Ok(fields) => {
+                    let labels = fields.keys().collect::<Vec<&String>>();
+                    for arg_label in &arg_labels {
+                        if !labels.contains(&arg_label) {
+                            stderr!("no such label: {}", arg_label);
+                            return Some(CliError::Other);
+                        }
+                    }
+                }
+            }
+
             let printer = |record: &ltsv::Record| {
-                let line = labels.iter()
+                let line = arg_labels.iter()
                     .map(|label| {
                         match record.get(label) {
                             Some(r) => format!("{}:{}", label, r),
