@@ -29,6 +29,16 @@ fn main() {
             None => 0,
         };
         exit(ret);
+    } else if config.query_select.len() > 0 {
+        let ret = match do_select(args, config.query_select) {
+            Some(CliError::Other) => 3,
+            Some(err) => {
+                stderr!("{}", err);
+                2
+            }
+            None => 0,
+        };
+        exit(ret);
     }
     exit(0);
 }
@@ -46,6 +56,7 @@ fn args_fail(msg: &str) -> ! {
 fn parse_config(args: Vec<String>) -> (Vec<String>, Config) {
     let mut opts = Options::new();
     opts.optflag("l", "list", "list LTSV labels");
+    opts.optmulti("s", "select", "select fields by specified labels", "LABEL");
     opts.optflag("h", "help", "show this message");
 
     let (_, args) = args.split_first().unwrap();
@@ -64,7 +75,11 @@ fn parse_config(args: Vec<String>) -> (Vec<String>, Config) {
         exit(0);
     }
 
-    (opt_match.free.clone(), Config { query_list: opt_match.opt_present("list") })
+    (opt_match.free.clone(),
+     Config {
+         query_list: opt_match.opt_present("list"),
+         query_select: opt_match.opt_strs("select"),
+     })
 }
 
 fn do_list(args: Vec<String>) -> Option<CliError> {
@@ -91,6 +106,42 @@ fn do_list(args: Vec<String>) -> Option<CliError> {
                     }
                     return None;
                 }
+            }
+        }
+    }
+}
+
+fn do_select(args: Vec<String>, labels: Vec<String>) -> Option<CliError> {
+    if args.len() == 0 {
+        return Some(CliError::NotEnoughArgs);
+    }
+    if args.len() == 2 {
+        return Some(CliError::TooManyArgs);
+    }
+    match ltsv::open_file(args[0].as_ref()) {
+        Err(err) => {
+            stderr!("failed to open file: {}", err);
+            return Some(CliError::Other);
+        }
+        Ok(mut f) => {
+            let printer = |record: &ltsv::Record| {
+                let line = labels.iter()
+                    .map(|label| {
+                        match record.get(label) {
+                            Some(r) => format!("{}:{}", label, r),
+                            None => "".to_string(), // TODO
+                        }
+                    })
+                    .collect::<Vec<String>>()
+                    .join("\t");
+                println!("{}", line);
+            };
+            match ltsv::each_record(&mut f, printer) {
+                Err(err) => {
+                    stderr!("failed to parse head: {:?}", err);
+                    return Some(CliError::Other);
+                }
+                Ok(_) => return None,
             }
         }
     }
