@@ -97,7 +97,7 @@ fn do_list(args: Vec<String>) -> Option<CliError> {
         Ok(mut f) => {
             match ltsv::parse_head(&mut f) {
                 Err(err) => {
-                    stderr!("failed to parse head: {:?}", err);
+                    stderr!("failed to parse head: {}", err);
                     return Some(CliError::Other);
                 }
                 Ok(items) => {
