@@ -64,6 +64,43 @@ pub fn parse_head(input: &mut LineReader) -> Result<Record, Error> {
     Ok(record)
 }
 
+pub fn each_record<F>(reader: &mut LineReader, f: F) -> Result<(), Error>
+    where F: Fn(&Record)
+{
+    loop {
+        let mut line = String::new();
+        match reader.read_line(&mut line) {
+            Err(err) => return Err(err).map_err(Error::Io),
+            Ok(0) => break, // EOF
+            Ok(_) => {
+                line.pop(); // remove '\n'
+                if line.len() == 0 {
+                    continue;
+                }
+
+                let mut record = Record::new();
+                for item in line.split('\t').collect::<Vec<&str>>().into_iter() {
+                    let v = item.splitn(2, ':').collect::<Vec<&str>>();
+                    match v.len() {
+                        0 | 1 => {
+                            return Err(ParseError { msg: format!("invalid ltsv item: {}", item) })
+                                .map_err(Error::Parse);
+                        }
+                        2 => record.insert(v[0].to_string(), v[1].to_string()),
+                        _ => {
+                            return Err(ParseError { msg: format!("unreachable error: {}", item) })
+                                .map_err(Error::Parse);
+                        }
+                    };
+                }
+
+                f(&record);
+            }
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod test {
     #[test]
