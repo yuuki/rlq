@@ -1,4 +1,4 @@
-#![crate_name = "rllq"]
+#![crate_name = "rlq"]
 
 extern crate getopts;
 #[macro_use]
@@ -9,10 +9,10 @@ use std::process::exit;
 use std::io::{self, Write};
 use getopts::Options;
 
-extern crate rllq;
-use rllq::config::*;
-use rllq::ltsv;
-use rllq::error::CliError;
+extern crate rlq;
+use rlq::config::*;
+use rlq::ltsv;
+use rlq::error::CliError;
 
 #[macro_use]
 pub mod error;
@@ -54,7 +54,7 @@ fn main() {
 }
 
 fn print_usage(opts: &Options) {
-    let message = format!("Usage: rllq [ options ... ] [URL]\n\twhere options include");
+    let message = format!("Usage: rlq [ options ... ] [URL]\n\twhere options include");
     println!("{}", opts.usage(&message));
 }
 
