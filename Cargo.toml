@@ -1,8 +1,15 @@
 [package]
 name = "rlq"
 version = "0.1.0"
-authors = ["y_uuki <yuki.tsubo@gmail.com>"]
+authors = ["TSUBOUCHI Yuuki <yuki.tsubo@gmail.com>"]
+description = "LTSV query tool"
+license = "MIT"
+repository = "https://github.com/yuuki/rlq"
 
 [dependencies]
 getopts = "0.2"
 log = "0.3"
+
+[[bin]]
+doc = false
+name = "rlq"
