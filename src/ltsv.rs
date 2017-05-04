@@ -141,6 +141,53 @@ pub fn group_by(reader: &mut LineReader, label: &String) -> Result<FieldGroupCou
     Ok(group)
 }
 
+pub fn order_by(reader: &mut LineReader, label: &String) -> Result<Vec<String>, Error> {
+    let mut lines = Vec::new();
+    loop {
+        let mut line = String::new();
+        match reader.read_line(&mut line) {
+            Err(err) => return Err(err).map_err(Error::Io),
+            Ok(0) => break, // EOF
+            Ok(_) => lines.push(line),
+        }
+    }
+    lines.sort_by(|a, b| {
+        let av = match line2record(a) {
+            None => "".to_string(),
+            Some(record) => {
+                match record.get(label) {
+                    Some(v) => v.to_string(),
+                    None => "".to_string(),
+                }
+            }
+        };
+        let bv = match line2record(b) {
+            None => "".to_string(),
+            Some(record) => {
+                match record.get(label) {
+                    Some(v) => v.to_string(),
+                    None => "".to_string(),
+                }
+            }
+        };
+        av.cmp(&bv)
+    });
+
+    Ok(lines)
+}
+
+fn line2record(line: &String) -> Option<Record> {
+    let mut record = Record::new();
+    for field in line.split('\t').collect::<Vec<_>>().into_iter() {
+        let v = field.splitn(2, ':').collect::<Vec<_>>();
+        match v.len() {
+            2 => record.insert(v[0].to_string(), v[1].to_string()),
+            _ => return None,
+        };
+    }
+    Some(record)
+}
+
 #[cfg(test)]
 mod test {
     #[test]
