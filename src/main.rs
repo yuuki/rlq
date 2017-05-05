@@ -79,7 +79,7 @@ fn parse_config(args: Vec<String>) -> (Vec<String>, Config) {
     opts.optmulti("s", "select", "select fields by specified labels", "LABEL");
     opts.optopt("g",
                 "groupby",
-                "Group element by specified keys (the default aggregation method: 'count')",
+                "Group element by specified labels (the default aggregation method: 'count')",
                 "LABEL");
     opts.optopt("o",
                 "orderby",
@@ -130,9 +130,9 @@ fn do_list(args: Vec<String>) -> Option<CliError> {
                     stderr!("failed to parse head: {}", err);
                     return Some(CliError::Other);
                 }
-                Ok(items) => {
-                    for (k, _) in &items {
-                        println!("{}", k)
+                Ok(record) => {
+                    for (label, _) in &record {
+                        println!("{}", label)
                     }
                     return None;
                 }

@@ -47,16 +47,16 @@ pub fn parse_head(input: &mut LineReader) -> Result<Record, Error> {
     }
 
     let mut record = Record::new();
-    for item in found.split('\t').collect::<Vec<&str>>().into_iter() {
-        let v = item.splitn(2, ':').collect::<Vec<&str>>();
+    for field in found.split('\t').collect::<Vec<&str>>().into_iter() {
+        let v = field.splitn(2, ':').collect::<Vec<&str>>();
         match v.len() {
             0 | 1 => {
-                return Err(ParseError { msg: format!("invalid ltsv item: {}", item) })
+                return Err(ParseError { msg: format!("invalid ltsv field: {}", field) })
                     .map_err(Error::Parse);
             }
             2 => record.insert(v[0].to_string(), v[1].to_string()),
             _ => {
-                return Err(ParseError { msg: format!("unreachable error: {}", item) })
+                return Err(ParseError { msg: format!("unreachable error: {}", field) })
                     .map_err(Error::Parse);
             }
         };
