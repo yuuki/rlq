@@ -185,7 +185,7 @@ fn do_select(args: Vec<String>, arg_labels: Vec<String>) -> Option<CliError> {
             };
             match ltsv::each_record(&mut f, printer) {
                 Err(err) => {
-                    stderr!("failed to parse head: {:?}", err);
+                    stderr!("failed to print each record: {}", err);
                     return Some(CliError::Other);
                 }
                 Ok(_) => return None,
@@ -209,7 +209,7 @@ fn do_groupby(args: Vec<String>, arg_label: String) -> Option<CliError> {
         Ok(mut f) => {
             match ltsv::group_by(&mut f, &arg_label) {
                 Err(err) => {
-                    stderr!("failed to parse head: {:?}", err);
+                    stderr!("failed to group by {}: {}", arg_label, err);
                     return Some(CliError::Other);
                 }
                 Ok(group) => {
