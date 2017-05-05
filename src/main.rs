@@ -1,7 +1,6 @@
 #![crate_name = "rlq"]
 
 extern crate getopts;
-#[macro_use]
 extern crate log;
 
 use std::env;
