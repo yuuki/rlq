@@ -131,7 +131,7 @@ fn do_select(args: Vec<String>, arg_labels: Vec<String>) -> Option<CliError> {
     match ltsv::open_file(args[0].as_ref()) {
         Err(err) => {
             stderr!("failed to open file: {}", err);
-            return Some(CliError::Other);
+            Some(CliError::Other)
         }
         Ok(mut f) => {
             // Validate that each label exists on the target data.
@@ -166,9 +166,9 @@ fn do_select(args: Vec<String>, arg_labels: Vec<String>) -> Option<CliError> {
             match ltsv::each_record(&mut f, printer) {
                 Err(err) => {
                     stderr!("failed to print each record: {}", err);
-                    return Some(CliError::Other);
+                    Some(CliError::Other)
                 }
-                Ok(_) => return None,
+                Ok(_) => None,
             }
         }
     }
@@ -184,19 +184,19 @@ fn do_groupby(args: Vec<String>, arg_label: String) -> Option<CliError> {
     match ltsv::open_file(args[0].as_ref()) {
         Err(err) => {
             stderr!("failed to open file: {}", err);
-            return Some(CliError::Other);
+            Some(CliError::Other)
         }
         Ok(mut f) => {
             match ltsv::group_by(&mut f, &arg_label) {
                 Err(err) => {
                     stderr!("failed to group by {}: {}", arg_label, err);
-                    return Some(CliError::Other);
+                    Some(CliError::Other)
                 }
                 Ok(group) => {
                     for (label_value, count) in group {
                         println!("{}:{}\tcount:{}", arg_label, label_value, count);
                     }
-                    return None;
+                    None
                 }
             }
         }
@@ -213,19 +213,19 @@ fn do_orderby(args: Vec<String>, arg_label: String) -> Option<CliError> {
     match ltsv::open_file(args[0].as_ref()) {
         Err(err) => {
             stderr!("failed to open file: {}", err);
-            return Some(CliError::Other);
+            Some(CliError::Other)
         }
         Ok(mut f) => {
             match ltsv::order_by(&mut f, &arg_label) {
                 Err(err) => {
                     stderr!("failed to order by {}: {}", arg_label, err);
-                    return Some(CliError::Other);
+                    Some(CliError::Other)
                 }
                 Ok(lines) => {
                     for line in lines {
                         print!("{}", line);
                     }
-                    return None;
+                    None
                 }
             }
         }
