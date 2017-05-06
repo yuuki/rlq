@@ -59,11 +59,11 @@ fn parse_config(args: Vec<String>) -> (Vec<String>, Config) {
     opts.optmulti("s", "select", "select fields by specified labels", "LABEL");
     opts.optopt("g",
                 "groupby",
-                "Group element by specified labels (the default aggregation method: 'count')",
+                "group element by specified labels (the default aggregation method: 'count')",
                 "LABEL");
     opts.optopt("o",
                 "orderby",
-                "Order record by specified labels (the default order: 'asc')",
+                "prder record by specified labels (the default order: 'asc')",
                 "LABEL");
     opts.optflag("h", "help", "show this message");
 
