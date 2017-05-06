@@ -17,9 +17,13 @@ use rlq::error::CliError;
 pub mod error;
 
 fn main() {
-    let (args, config) = parse_config(env::args().collect());
+    exit(run(env::args().collect()));
+}
+
+fn run(args: Vec<String>) -> i32 {
+    let (args, config) = parse_config(args);
     if config.query_list {
-        let ret = match do_list(args) {
+        return match do_list(args) {
             Some(CliError::Other) => 3,
             Some(err) => {
                 stderr!("{}", err);
@@ -27,9 +31,8 @@ fn main() {
             }
             None => 0,
         };
-        exit(ret);
     } else if config.query_select.len() > 0 {
-        let ret = match do_select(args, config.query_select) {
+        return match do_select(args, config.query_select) {
             Some(CliError::Other) => 3,
             Some(err) => {
                 stderr!("{}", err);
@@ -37,9 +40,8 @@ fn main() {
             }
             None => 0,
         };
-        exit(ret);
     } else if config.query_groupby != "" {
-        let ret = match do_groupby(args, config.query_groupby) {
+        return match do_groupby(args, config.query_groupby) {
             Some(CliError::Other) => 3,
             Some(err) => {
                 stderr!("{}", err);
@@ -47,9 +49,8 @@ fn main() {
             }
             None => 0,
         };
-        exit(ret);
     } else if config.query_orderby != "" {
-        let ret = match do_orderby(args, config.query_orderby) {
+        return match do_orderby(args, config.query_orderby) {
             Some(CliError::Other) => 3,
             Some(err) => {
                 stderr!("{}", err);
@@ -57,9 +58,9 @@ fn main() {
             }
             None => 0,
         };
-        exit(ret);
     }
-    exit(0);
+
+    return 0;
 }
 
 fn print_usage(opts: &Options) {
