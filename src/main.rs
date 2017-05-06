@@ -22,45 +22,25 @@ fn main() {
 
 fn run(args: Vec<String>) -> i32 {
     let (args, config) = parse_config(args);
-    if config.query_list {
-        return match do_list(args) {
-            Some(CliError::Other) => 3,
-            Some(err) => {
-                stderr!("{}", err);
-                2
-            }
-            None => 0,
-        };
+    let ret = if config.query_list {
+        do_list(args)
     } else if config.query_select.len() > 0 {
-        return match do_select(args, config.query_select) {
-            Some(CliError::Other) => 3,
-            Some(err) => {
-                stderr!("{}", err);
-                2
-            }
-            None => 0,
-        };
+        do_select(args, config.query_select)
     } else if config.query_groupby != "" {
-        return match do_groupby(args, config.query_groupby) {
-            Some(CliError::Other) => 3,
-            Some(err) => {
-                stderr!("{}", err);
-                2
-            }
-            None => 0,
-        };
+        do_groupby(args, config.query_groupby)
     } else if config.query_orderby != "" {
-        return match do_orderby(args, config.query_orderby) {
-            Some(CliError::Other) => 3,
-            Some(err) => {
-                stderr!("{}", err);
-                2
-            }
-            None => 0,
-        };
+        do_orderby(args, config.query_orderby)
+    } else {
+        None
+    };
+    match ret {
+        Some(CliError::Other) => 3,
+        Some(err) => {
+            stderr!("{}", err);
+            2
+        }
+        None => 0,
     }
-
-    return 0;
 }
 
 fn print_usage(opts: &Options) {
